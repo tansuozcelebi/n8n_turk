@@ -62,10 +62,11 @@ import { useSettingsStore } from '@/stores/settings.store';
 import { useWorkflowsStore } from '@/stores/workflows.store';
 import { isCredentialOnlyNodeType } from '@/utils/credentialOnlyNodes';
 import { N8nIcon, N8nInput, N8nInputNumber, N8nOption, N8nSelect } from 'n8n-design-system';
-import type { EventBus } from 'n8n-design-system/utils';
-import { createEventBus } from 'n8n-design-system/utils';
+import type { EventBus } from '@n8n/utils/event-bus';
+import { createEventBus } from '@n8n/utils/event-bus';
 import { useRouter } from 'vue-router';
 import { useElementSize } from '@vueuse/core';
+import { completeExpressionSyntax, isStringWithExpressionSyntax } from '@/utils/expressions';
 
 type Picker = { $emit: (arg0: string, arg1: Date) => void };
 
@@ -813,17 +814,24 @@ function valueChanged(value: NodeParameterValueType | {} | Date) {
 	if (remoteParameterOptionsLoading.value) {
 		return;
 	}
-	// Only update the value if it has changed
-	const oldValue = node.value?.parameters
-		? nodeHelpers.getParameterValue(node.value?.parameters, props.parameter.name, '')
-		: undefined;
+
+	const oldValue = get(node.value, props.path);
+
 	if (oldValue !== undefined && oldValue === value) {
+		// Only update the value if it has changed
 		return;
+	}
+
+	if (!oldValue && oldValue !== undefined && isStringWithExpressionSyntax(value)) {
+		// if empty old value and updated value has an expression, add '=' prefix to switch to expression mode
+		value = '=' + value;
 	}
 
 	if (props.parameter.name === 'nodeCredentialType') {
 		activeCredentialType.value = value as string;
 	}
+
+	value = completeExpressionSyntax(value);
 
 	if (value instanceof Date) {
 		value = value.toISOString();
@@ -1067,11 +1075,11 @@ watch(remoteParameterOptionsLoading, () => {
 	tempValue.value = displayValue.value as string;
 });
 
-// Focus input field when changing from fixed value to expression
+// Focus input field when changing between fixed and expression
 watch(isModelValueExpression, async (isExpression, wasExpression) => {
-	if (!props.isReadOnly && isExpression && !wasExpression) {
+	if (!props.isReadOnly && isExpression !== wasExpression) {
 		await nextTick();
-		inputField.value?.focus();
+		await setFocus();
 	}
 });
 
@@ -1242,6 +1250,7 @@ onUpdated(async () => {
 							:is-read-only="isReadOnly"
 							:rows="editorRows"
 							fullscreen
+							fill-parent
 							@update:model-value="valueChangedDebounced"
 						/>
 					</div>

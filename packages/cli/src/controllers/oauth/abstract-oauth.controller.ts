@@ -4,7 +4,7 @@ import Csrf from 'csrf';
 import type { Response } from 'express';
 import { Credentials, Logger } from 'n8n-core';
 import type { ICredentialDataDecryptedObject, IWorkflowExecuteAdditionalData } from 'n8n-workflow';
-import { jsonParse, ApplicationError } from 'n8n-workflow';
+import { jsonParse, UnexpectedError } from 'n8n-workflow';
 
 import { RESPONSE_ERROR_MESSAGES, Time } from '@/constants';
 import { CredentialsHelper } from '@/credentials-helper';
@@ -136,10 +136,11 @@ export abstract class AbstractOAuthController {
 
 	protected async encryptAndSaveData(
 		credential: ICredentialsDb,
-		decryptedData: ICredentialDataDecryptedObject,
+		toUpdate: ICredentialDataDecryptedObject,
+		toDelete: string[] = [],
 	) {
-		const credentials = new Credentials(credential, credential.type);
-		credentials.setData(decryptedData);
+		const credentials = new Credentials(credential, credential.type, credential.data);
+		credentials.updateData(toUpdate, toDelete);
 		await this.credentialsRepository.update(credential.id, {
 			...credentials.getDataToSave(),
 			updatedAt: new Date(),
@@ -170,7 +171,7 @@ export abstract class AbstractOAuthController {
 		});
 
 		if (typeof decoded.cid !== 'string' || typeof decoded.token !== 'string') {
-			throw new ApplicationError(errorMessage);
+			throw new UnexpectedError(errorMessage);
 		}
 
 		if (decoded.userId !== req.user?.id) {
@@ -200,7 +201,7 @@ export abstract class AbstractOAuthController {
 		const state = this.decodeCsrfState(encodedState, req);
 		const credential = await this.getCredentialWithoutUser(state.cid);
 		if (!credential) {
-			throw new ApplicationError('OAuth callback failed because of insufficient permissions');
+			throw new UnexpectedError('OAuth callback failed because of insufficient permissions');
 		}
 
 		const additionalData = await this.getAdditionalData();
@@ -215,7 +216,7 @@ export abstract class AbstractOAuthController {
 		);
 
 		if (!this.verifyCsrfState(decryptedDataOriginal, state)) {
-			throw new ApplicationError('The OAuth callback state is invalid!');
+			throw new UnexpectedError('The OAuth callback state is invalid!');
 		}
 
 		return [credential, decryptedDataOriginal, oauthCredentials];

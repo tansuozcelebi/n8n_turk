@@ -2,7 +2,7 @@ import type { AxiosRequestConfig, Method, RawAxiosRequestHeaders } from 'axios';
 import axios from 'axios';
 import { ApplicationError, jsonParse, type GenericValue, type IDataObject } from 'n8n-workflow';
 import { parse } from 'flatted';
-import { assert } from '@/utils/assert';
+import { assert } from '@n8n/utils/assert';
 
 import { BROWSER_ID_STORAGE_KEY } from '@/constants';
 import type { IExecutionFlattedResponse, IExecutionResponse, IRestApiContext } from '@/Interface';
@@ -129,6 +129,31 @@ export async function request(config: {
 
 		throw error;
 	}
+}
+
+/**
+ * Sends a request to the API and returns the response without extracting the data key.
+ * @param context Rest API context
+ * @param method HTTP method
+ * @param endpoint relative path to the API endpoint
+ * @param data request data
+ * @returns data and total count
+ */
+export async function getFullApiResponse<T>(
+	context: IRestApiContext,
+	method: Method,
+	endpoint: string,
+	data?: GenericValue | GenericValue[],
+) {
+	const response = await request({
+		method,
+		baseURL: context.baseUrl,
+		endpoint,
+		headers: { 'push-ref': context.pushRef },
+		data,
+	});
+
+	return response as { count: number; data: T };
 }
 
 export async function makeRestApiRequest<T>(

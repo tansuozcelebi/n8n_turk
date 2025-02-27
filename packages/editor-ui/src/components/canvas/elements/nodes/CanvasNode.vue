@@ -16,7 +16,7 @@ import type {
 	CanvasNodeEventBusEvents,
 	CanvasEventBusEvents,
 } from '@/types';
-import { CanvasNodeRenderType, CanvasConnectionMode } from '@/types';
+import { CanvasConnectionMode, CanvasNodeRenderType } from '@/types';
 import NodeIcon from '@/components/NodeIcon.vue';
 import { useNodeTypesStore } from '@/stores/nodeTypes.store';
 import CanvasNodeToolbar from '@/components/canvas/elements/nodes/CanvasNodeToolbar.vue';
@@ -31,15 +31,17 @@ import { useCanvas } from '@/composables/useCanvas';
 import {
 	createCanvasConnectionHandleString,
 	insertSpacersBetweenEndpoints,
-} from '@/utils/canvasUtilsV2';
-import type { EventBus } from 'n8n-design-system';
-import { createEventBus } from 'n8n-design-system';
+} from '@/utils/canvasUtils';
+import type { EventBus } from '@n8n/utils/event-bus';
+import { createEventBus } from '@n8n/utils/event-bus';
 import { isEqual } from 'lodash-es';
+import CanvasNodeTrigger from '@/components/canvas/elements/nodes/render-types/parts/CanvasNodeTrigger.vue';
 
 type Props = NodeProps<CanvasNodeData> & {
 	readOnly?: boolean;
 	eventBus?: EventBus<CanvasEventBusEvents>;
 	hovered?: boolean;
+	nearbyHovered?: boolean;
 };
 
 const slots = defineSlots<{
@@ -57,6 +59,7 @@ const emit = defineEmits<{
 	select: [id: string, selected: boolean];
 	toggle: [id: string];
 	activate: [id: string];
+	deactivate: [id: string];
 	'open:contextmenu': [id: string, event: MouseEvent, source: 'node-button' | 'node-right-click'];
 	update: [id: string, parameters: Record<string, unknown>];
 	'update:inputs': [id: string];
@@ -256,6 +259,10 @@ function onActivate() {
 	emit('activate', props.id);
 }
 
+function onDeactivate() {
+	emit('deactivate', props.id);
+}
+
 function onOpenContextMenuFromToolbar(event: MouseEvent) {
 	emit('open:contextmenu', props.id, event, 'node-button');
 }
@@ -393,7 +400,8 @@ onBeforeUnmount(() => {
 		/>
 
 		<CanvasNodeRenderer
-			@dblclick.stop="onActivate"
+			@activate="onActivate"
+			@deactivate="onDeactivate"
 			@move="onMove"
 			@update="onUpdate"
 			@open:contextmenu="onOpenContextMenuFromNode"
@@ -406,12 +414,24 @@ onBeforeUnmount(() => {
 			/>
 			<!-- @TODO :color-default="iconColorDefault"-->
 		</CanvasNodeRenderer>
+
+		<CanvasNodeTrigger
+			v-if="
+				props.data.render.type === CanvasNodeRenderType.Default && props.data.render.options.trigger
+			"
+			:name="data.name"
+			:type="data.type"
+			:hovered="nearbyHovered"
+			:disabled="isDisabled"
+			:read-only="readOnly"
+			:class="$style.trigger"
+		/>
 	</div>
 </template>
 
 <style lang="scss" module>
 .canvasNode {
-	&:hover,
+	&:hover:not(:has(> .trigger:hover)), // exclude .trigger which has extended hit zone
 	&:focus-within,
 	&.showToolbar {
 		.canvasNodeToolbar {

@@ -13,21 +13,10 @@ import type {
 	ITaskDataConnections,
 	ITaskMetadata,
 	IWorkflowExecuteAdditionalData,
-	NodeConnectionType,
 	Workflow,
 	WorkflowExecuteMode,
 } from 'n8n-workflow';
-import { createDeferredPromise } from 'n8n-workflow';
-
-// eslint-disable-next-line import/no-cycle
-import {
-	constructExecutionMetaData,
-	copyInputItems,
-	getRequestHelperFunctions,
-	getSSHTunnelFunctions,
-	normalizeItems,
-	returnJsonArray,
-} from '@/node-execute-functions';
+import { createDeferredPromise, NodeConnectionType } from 'n8n-workflow';
 
 import { BaseExecuteContext } from './base-execute-context';
 import {
@@ -36,9 +25,16 @@ import {
 	getBinaryDataBuffer,
 	getBinaryHelperFunctions,
 } from './utils/binary-helper-functions';
+import { constructExecutionMetaData } from './utils/construct-execution-metadata';
+import { copyInputItems } from './utils/copy-input-items';
 import { getDeduplicationHelperFunctions } from './utils/deduplication-helper-functions';
 import { getFileSystemHelperFunctions } from './utils/file-system-helper-functions';
+// eslint-disable-next-line import/no-cycle
 import { getInputConnectionData } from './utils/get-input-connection-data';
+import { normalizeItems } from './utils/normalize-items';
+import { getRequestHelperFunctions } from './utils/request-helper-functions';
+import { returnJsonArray } from './utils/return-json-array';
+import { getSSHTunnelFunctions } from './utils/ssh-tunnel-helper-functions';
 
 export class SupplyDataContext extends BaseExecuteContext implements ISupplyDataFunctions {
 	readonly helpers: ISupplyDataFunctions['helpers'];
@@ -110,6 +106,28 @@ export class SupplyDataContext extends BaseExecuteContext implements ISupplyData
 				fallbackValue,
 				options,
 			)) as ISupplyDataFunctions['getNodeParameter'];
+	}
+
+	cloneWith(replacements: {
+		runIndex: number;
+		inputData: INodeExecutionData[][];
+	}): SupplyDataContext {
+		const context = new SupplyDataContext(
+			this.workflow,
+			this.node,
+			this.additionalData,
+			this.mode,
+			this.runExecutionData,
+			replacements.runIndex,
+			this.connectionInputData,
+			{},
+			this.connectionType,
+			this.executeData,
+			this.closeFunctions,
+			this.abortSignal,
+		);
+		context.addInputData(NodeConnectionType.AiTool, replacements.inputData);
+		return context;
 	}
 
 	async getInputConnectionData(

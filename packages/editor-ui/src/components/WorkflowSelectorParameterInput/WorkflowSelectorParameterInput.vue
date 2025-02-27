@@ -2,8 +2,8 @@
 import type { ComponentInstance } from 'vue';
 import { computed, ref, onMounted, onUnmounted, watch } from 'vue';
 import { useWorkflowsStore } from '@/stores/workflows.store';
-import type { EventBus } from 'n8n-design-system/utils';
-import { createEventBus } from 'n8n-design-system/utils';
+import type { EventBus } from '@n8n/utils/event-bus';
+import { createEventBus } from '@n8n/utils/event-bus';
 import type {
 	INodeParameterResourceLocator,
 	INodeProperties,
@@ -36,6 +36,7 @@ interface Props {
 	parameterIssues?: string[];
 	parameter: INodeProperties;
 	sampleWorkflow?: IWorkflowDataCreate;
+	newResourceLabel?: string;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -45,6 +46,7 @@ const props = withDefaults(defineProps<Props>(), {
 	isReadOnly: false,
 	forceShowExpression: false,
 	expressionDisplayValue: '',
+	newResourceLabel: '',
 	parameterIssues: () => [],
 	sampleWorkflow: () => SAMPLE_SUBWORKFLOW_WORKFLOW,
 });
@@ -55,6 +57,7 @@ const emit = defineEmits<{
 	modalOpenerClick: [];
 	focus: [];
 	blur: [];
+	workflowCreated: [workflowId: string];
 }>();
 
 const workflowsStore = useWorkflowsStore();
@@ -103,6 +106,10 @@ const currentProjectName = computed(() => {
 });
 
 const getCreateResourceLabel = computed(() => {
+	if (props.newResourceLabel) {
+		return props.newResourceLabel;
+	}
+
 	if (!currentProjectName.value) {
 		return i18n.baseText('executeWorkflowTrigger.createNewSubworkflow.noProject');
 	}
@@ -232,6 +239,8 @@ const onAddResourceClicked = async () => {
 	hideDropdown();
 
 	window.open(href, '_blank');
+
+	emit('workflowCreated', newWorkflow.id);
 };
 </script>
 <template>

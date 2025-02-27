@@ -15,9 +15,10 @@ import type {
 	IRun,
 	INode,
 	IDataObject,
+	IWorkflowBase,
 } from 'n8n-workflow';
 
-import { NodeConnectionType } from 'n8n-workflow';
+import { NodeConnectionType, TelemetryHelpers } from 'n8n-workflow';
 
 import { useToast } from '@/composables/useToast';
 import { useNodeHelpers } from '@/composables/useNodeHelpers';
@@ -35,39 +36,27 @@ import { isEmpty } from '@/utils/typesUtils';
 import { useI18n } from '@/composables/useI18n';
 import { get } from 'lodash-es';
 import { useExecutionsStore } from '@/stores/executions.store';
+import { useTelemetry } from './useTelemetry';
 import { useSettingsStore } from '@/stores/settings.store';
 import { usePushConnectionStore } from '@/stores/pushConnection.store';
-
-const getDirtyNodeNames = (
-	runData: IRunData,
-	getParametersLastUpdate: (nodeName: string) => number | undefined,
-): string[] | undefined => {
-	const dirtyNodeNames = Object.entries(runData).reduce<string[]>((acc, [nodeName, tasks]) => {
-		if (!tasks.length) return acc;
-
-		const updatedAt = getParametersLastUpdate(nodeName) ?? 0;
-
-		if (updatedAt > tasks[0].startTime) {
-			acc.push(nodeName);
-		}
-
-		return acc;
-	}, []);
-
-	return dirtyNodeNames.length ? dirtyNodeNames : undefined;
-};
+import { useNodeDirtiness } from '@/composables/useNodeDirtiness';
 
 export function useRunWorkflow(useRunWorkflowOpts: { router: ReturnType<typeof useRouter> }) {
 	const nodeHelpers = useNodeHelpers();
 	const workflowHelpers = useWorkflowHelpers({ router: useRunWorkflowOpts.router });
 	const i18n = useI18n();
 	const toast = useToast();
+	const telemetry = useTelemetry();
+	const externalHooks = useExternalHooks();
+	const settingsStore = useSettingsStore();
 
 	const rootStore = useRootStore();
 	const pushConnectionStore = usePushConnectionStore();
 	const uiStore = useUIStore();
 	const workflowsStore = useWorkflowsStore();
 	const executionsStore = useExecutionsStore();
+	const { dirtinessByName } = useNodeDirtiness();
+
 	// Starts to execute a workflow on server
 	async function runWorkflowApi(runData: IStartRunData): Promise<IExecutionPushResponse> {
 		if (!pushConnectionStore.isConnected) {
@@ -168,7 +157,7 @@ export function useRunWorkflow(useRunWorkflowOpts: { router: ReturnType<typeof u
 				executedNode = options.triggerNode;
 			}
 
-			if (options.triggerNode && options.nodeData) {
+			if (options.triggerNode) {
 				triggerToStartFrom = {
 					name: options.triggerNode,
 					data: options.nodeData,
@@ -224,6 +213,11 @@ export function useRunWorkflow(useRunWorkflowOpts: { router: ReturnType<typeof u
 				}
 			}
 
+			// partial executions must have a destination node
+			const isPartialExecution = options.destinationNode !== undefined;
+			const version = settingsStore.partialExecutionVersion;
+
+			// TODO: this will be redundant once we cleanup the partial execution v1
 			const startNodes: StartNodeData[] = startNodeNames.map((name) => {
 				// Find for each start node the source data
 				let sourceData = get(runData, [name, 0, 'source', 0], null);
@@ -262,10 +256,6 @@ export function useRunWorkflow(useRunWorkflowOpts: { router: ReturnType<typeof u
 				return undefined;
 			}
 
-			// partial executions must have a destination node
-			const isPartialExecution = options.destinationNode !== undefined;
-			const settingsStore = useSettingsStore();
-			const version = settingsStore.partialExecutionVersion;
 			const startRunData: IStartRunData = {
 				workflowData,
 				// With the new partial execution version the backend decides what run
@@ -288,10 +278,11 @@ export function useRunWorkflow(useRunWorkflowOpts: { router: ReturnType<typeof u
 			}
 
 			if (startRunData.runData) {
-				startRunData.dirtyNodeNames = getDirtyNodeNames(
-					startRunData.runData,
-					workflowsStore.getParametersLastUpdate,
+				const nodeNames = Object.entries(dirtinessByName.value).flatMap(([nodeName, dirtiness]) =>
+					dirtiness ? [nodeName] : [],
 				);
+
+				startRunData.dirtyNodeNames = nodeNames.length > 0 ? nodeNames : undefined;
 			}
 
 			// Init the execution data to represent the start of the execution
@@ -307,6 +298,7 @@ export function useRunWorkflow(useRunWorkflowOpts: { router: ReturnType<typeof u
 				stoppedAt: undefined,
 				workflowId: workflow.id,
 				executedNode,
+				triggerNode: triggerToStartFrom?.name,
 				data: {
 					resultData: {
 						runData: startRunData.runData ?? {},
@@ -345,6 +337,7 @@ export function useRunWorkflow(useRunWorkflowOpts: { router: ReturnType<typeof u
 					nodes: workflowData.nodes,
 					runData: workflowsStore.getWorkflowExecution?.data?.resultData?.runData,
 					destinationNode: options.destinationNode,
+					triggerNode: options.triggerNode,
 					pinData,
 					directParentNodes,
 					source: options.source,
@@ -352,7 +345,7 @@ export function useRunWorkflow(useRunWorkflowOpts: { router: ReturnType<typeof u
 				});
 			} catch (error) {}
 
-			await useExternalHooks().run('workflowRun.runWorkflow', {
+			await externalHooks.run('workflowRun.runWorkflow', {
 				nodeName: options.destinationNode,
 				source: options.source,
 			});
@@ -467,8 +460,31 @@ export function useRunWorkflow(useRunWorkflowOpts: { router: ReturnType<typeof u
 		}
 	}
 
+	async function runEntireWorkflow(source: 'node' | 'main', triggerNode?: string) {
+		const workflow = workflowHelpers.getCurrentWorkflow();
+
+		void workflowHelpers.getWorkflowDataToSave().then((workflowData) => {
+			const telemetryPayload = {
+				workflow_id: workflow.id,
+				node_graph_string: JSON.stringify(
+					TelemetryHelpers.generateNodesGraph(
+						workflowData as IWorkflowBase,
+						workflowHelpers.getNodeTypes(),
+						{ isCloudDeployment: settingsStore.isCloudDeployment },
+					).nodeGraph,
+				),
+				button_type: source,
+			};
+			telemetry.track('User clicked execute workflow button', telemetryPayload);
+			void externalHooks.run('nodeView.onRunWorkflow', telemetryPayload);
+		});
+
+		void runWorkflow({ triggerNode });
+	}
+
 	return {
 		consolidateRunDataAndStartNodes,
+		runEntireWorkflow,
 		runWorkflow,
 		runWorkflowApi,
 		stopCurrentExecution,
