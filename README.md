@@ -1,72 +1,72 @@
 ![Banner image](https://user-images.githubusercontent.com/10284570/173569848-c624317f-42b1-45a6-ab09-f0ea3c247648.png)
 
-# n8n - Secure Workflow Automation for Technical Teams
+# n8n-Turk - Teknik takımlar için işakışları oluştur.
 
-n8n is a workflow automation platform that gives technical teams the flexibility of code with the speed of no-code. With 400+ integrations, native AI capabilities, and a fair-code license, n8n lets you build powerful automations while maintaining full control over your data and deployments.
+n8n, teknik ekiplere kod esnekliğini kodsuz hızıyla sunan bir iş akışı otomasyon platformudur. 400'den fazla entegrasyon, yerel AI yetenekleri ve adil kod lisansıyla n8n, verileriniz ve dağıtımlarınız üzerinde tam kontrol sağlarken güçlü otomasyonlar oluşturmanıza olanak tanır.
 
-![n8n.io - Screenshot](https://raw.githubusercontent.com/n8n-io/n8n/master/assets/n8n-screenshot-readme.png)
+![n8n.io - Ekran Görüntüsü](https://raw.githubusercontent.com/n8n-io/n8n/master/assets/n8n-screenshot-readme.png)
 
-## Key Capabilities
+## Temel Yetenekler
 
-- **Code When You Need It**: Write JavaScript/Python, add npm packages, or use the visual interface
-- **AI-Native Platform**: Build AI agent workflows based on LangChain with your own data and models
-- **Full Control**: Self-host with our fair-code license or use our [cloud offering](https://app.n8n.cloud/login)
-- **Enterprise-Ready**: Advanced permissions, SSO, and air-gapped deployments
-- **Active Community**: 400+ integrations and 900+ ready-to-use [templates](https://n8n.io/workflows)
+- **İhtiyaç Duyduğunuzda Kodlayın**: JavaScript/Python yazın, npm paketleri ekleyin veya görsel arayüzü kullanın
+- **AI-Native Platform**: Kendi verileriniz ve modellerinizle LangChain tabanlı AI aracı iş akışları oluşturun
+- **Tam Kontrol**: Adil kod lisansımızla kendi kendinize barındırın veya [bulut teklifimizi](https://app.n8n.cloud/login) kullanın
+- **Kurumsal Kullanıma Hazır**: Gelişmiş izinler, SSO ve hava boşluklu dağıtımlar
+- **Aktif Topluluk**: 400'den fazla entegrasyon ve 900'den fazla kullanıma hazır [şablon](https://n8n.io/workflows)
 
-## Quick Start
+## Hızlı Başlangıç
 
-Try n8n instantly with [npx](https://docs.n8n.io/hosting/installation/npm/) (requires [Node.js](https://nodejs.org/en/)):
+Dene n8n [npx](https://docs.n8n.io/hosting/installation/npm/) ile anında ([Node.js](https://nodejs.org/en/) gerektirir):
 
 ```
 npx n8n
 ```
 
-Or deploy with [Docker](https://docs.n8n.io/hosting/installation/docker/):
+Veya [Docker](https://docs.n8n.io/hosting/installation/docker/ ile dağıtın):
 
 ```
 docker volume create n8n_data
 docker run -it --rm --name n8n -p 5678:5678 -v n8n_data:/home/node/.n8n docker.n8n.io/n8nio/n8n
 ```
 
-Access the editor at http://localhost:5678
+Editöre http://localhost:5678 adresinden erişin
 
-## Resources
+## Kaynaklar
 
-- 📚 [Documentation](https://docs.n8n.io)
-- 🔧 [400+ Integrations](https://n8n.io/integrations)
-- 💡 [Example Workflows](https://n8n.io/workflows)
-- 🤖 [AI & LangChain Guide](https://docs.n8n.io/langchain/)
-- 👥 [Community Forum](https://community.n8n.io)
-- 📖 [Community Tutorials](https://community.n8n.io/c/tutorials/28)
+- 📚 [Belgeler](https://docs.n8n.io)
+- 🔧 [400+ Entegrasyon](https://n8n.io/integrations)
+- 💡 [Örnek İş Akışları](https://n8n.io/workflows)
+- 🤖 [AI ve LangChain Kılavuzu](https://docs.n8n.io/langchain/)
+- 👥 [Topluluk Forumu](https://community.n8n.io)
+- 📖 [Topluluk Eğitimleri](https://community.n8n.io/c/tutorials/28)
 
-## Support
+## Destek
 
-Need help? Our community forum is the place to get support and connect with other users:
+Yardıma mı ihtiyacınız var? Topluluk forumumuz destek alabileceğiniz ve diğer kullanıcılarla bağlantı kurabileceğiniz yerdir:
 [community.n8n.io](https://community.n8n.io)
 
-## License
+## Lisans
 
-n8n is [fair-code](https://faircode.io) distributed under the [Sustainable Use License](https://github.com/n8n-io/n8n/blob/master/LICENSE.md) and [n8n Enterprise License](https://github.com/n8n-io/n8n/blob/master/LICENSE_EE.md).
+n8n, [Sürdürülebilir Kullanım Lisansı](https://github.com/n8n-io/n8n/blob/master/LICENSE.md) ve [n8n Kurumsal Lisansı](https://github.com/n8n-io/n8n/blob/master/LICENSE_EE.md) altında dağıtılan [adil kod](https://faircode.io)'dur.
 
-- **Source Available**: Always visible source code
-- **Self-Hostable**: Deploy anywhere
-- **Extensible**: Add your own nodes and functionality
+- **Kaynak Mevcut**: Her zaman görünür kaynak kodu
+- **Kendi Kendine Barındırılabilir**: Her yere dağıtın
+- **Genişletilebilir**: Kendi düğümlerinizi ve işlevlerinizi ekleyin
 
-[Enterprise licenses](mailto:license@n8n.io) available for additional features and support.
+Ek özellikler ve destek için [Kurumsal lisanslar](mailto:license@n8n.io) mevcuttur.
 
-Additional information about the license model can be found in the [docs](https://docs.n8n.io/reference/license/).
+Lisans modeli hakkında ek bilgiler [docs](https://docs.n8n.io/reference/license/) adresinde bulunabilir.
 
-## Contributing
+## Katkıda Bulunma
 
-Found a bug 🐛 or have a feature idea ✨? Check our [Contributing Guide](https://github.com/n8n-io/n8n/blob/master/CONTRIBUTING.md) to get started.
+Bir hata mı buldunuz 🐛 veya bir özellik fikriniz mi var ✨? Başlamak için [Katkıda Bulunma Kılavuzumuza](https://github.com/n8n-io/n8n/blob/master/CONTRIBUTING.md) göz atın.
 
-## Join the Team
+## Takıma Katılın
 
-Want to shape the future of automation? Check out our [job posts](https://n8n.io/careers) and join our team!
+Otomasyonun geleceğini şekillendirmek mi istiyorsunuz? [İş ilanlarımıza](https://n8n.io/careers) göz atın ve ekibimize katılın!
 
-## What does n8n mean?
+## N8n ne anlama geliyor?
 
-**Short answer:** It means "nodemation" and is pronounced as n-eight-n.
+**Kısa cevap:** "nodemation" anlamına gelir ve n-eight-n olarak telaffuz edilir.
 
-**Long answer:** "I get that question quite often (more often than I expected) so I decided it is probably best to answer it here. While looking for a good name for the project with a free domain I realized very quickly that all the good ones I could think of were already taken. So, in the end, I chose nodemation. 'node-' in the sense that it uses a Node-View and that it uses Node.js and '-mation' for 'automation' which is what the project is supposed to help with. However, I did not like how long the name was and I could not imagine writing something that long every time in the CLI. That is when I then ended up on 'n8n'." - **Jan Oberhauser, Founder and CEO, n8n.io**
+**Uzun cevap:** "Bu soruyu oldukça sık alıyorum (beklediğimden daha sık) bu yüzden muhtemelen burada cevaplamanın en iyisi olduğuna karar verdim. Ücretsiz bir alan adına sahip proje için iyi bir isim ararken aklıma gelen tüm iyi isimlerin çoktan alınmış olduğunu çok çabuk fark ettim. Bu yüzden sonunda nodemation'ı seçtim. 'node-', Node-View kullanması ve Node.js ve 'otomasyon' için '-mation' kullanması anlamında. Projenin yardımcı olması gereken şey de bu. Ancak ismin ne kadar uzun olduğundan hoşlanmadım ve CLI'da her seferinde bu kadar uzun bir şey yazmayı hayal edemedim. İşte o zaman 'n8n'e geçtim." - **Jan Oberhauser, Kurucusu ve CEO'su, n8n.io**
