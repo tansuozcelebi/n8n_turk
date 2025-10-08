@@ -1162,7 +1162,7 @@
 							"typeVersion": 1
 						}
 					],
-					"active": true,
+					"active": false,
 					"settings": {},
 					"connections": {
 						"On product creation": {

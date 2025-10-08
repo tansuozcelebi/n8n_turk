@@ -2,7 +2,7 @@
 	"createdAt": "2024-08-06T12:19:51.268Z",
 	"updatedAt": "2024-08-06T12:20:45.000Z",
 	"name": "Multiple Webhook 7",
-	"active": true,
+	"active": false,
 	"nodes": [
 		{
 			"parameters": { "path": "multiple-webhook7", "options": {} },

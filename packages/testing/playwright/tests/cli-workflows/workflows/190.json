@@ -220,7 +220,7 @@
 				"username": "={{$node[\"Set\"].json[\"username\"]}}",
 				"password": "=A{{Date.now()}}Z",
 				"additionalFields": {
-					"active": true,
+					"active": false,
 					"approved": true
 				}
 			},

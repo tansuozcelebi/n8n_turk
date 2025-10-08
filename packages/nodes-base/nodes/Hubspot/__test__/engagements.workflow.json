@@ -93,7 +93,7 @@
 					"engagement": {
 						"id": 274361144556,
 						"portalId": 146787276,
-						"active": true,
+						"active": false,
 						"createdAt": 1756127696406,
 						"lastUpdated": 1756127696406,
 						"ownerId": 123456789,
@@ -141,7 +141,7 @@
 					"engagement": {
 						"id": 274123775164,
 						"portalId": 146787276,
-						"active": true,
+						"active": false,
 						"createdAt": 1756127766844,
 						"lastUpdated": 1756127766844,
 						"type": "TASK",
@@ -188,7 +188,7 @@
 					"engagement": {
 						"id": 274123775164,
 						"portalId": 146787276,
-						"active": true,
+						"active": false,
 						"createdAt": 1756127766844,
 						"lastUpdated": 1756127766844,
 						"type": "TASK",

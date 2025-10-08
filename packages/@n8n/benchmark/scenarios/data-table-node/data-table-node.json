@@ -2,7 +2,7 @@
 	"createdAt": "2025-09-24T12:19:51.268Z",
 	"updatedAt": "2025-09-24T12:20:45.000Z",
 	"name": "Data table node",
-	"active": true,
+	"active": false,
 	"nodes": [
 		{
 			"parameters": {
